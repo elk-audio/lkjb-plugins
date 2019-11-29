@@ -10,8 +10,9 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include <emmintrin.h>
-
+#if !(ARCH == arm64)
+    #include <emmintrin.h>
+#endif
 #if JUCE_WINDOWS
 #pragma warning (push)
 #pragma warning (disable: 4996)
@@ -106,8 +107,10 @@ void SuperSpreadAudioProcessor::releaseResources()
 
 void SuperSpreadAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& /*midiMessages*/)
 {
+#if !(ARCH == arm64)
     unsigned int csr = _mm_getcsr();
     _mm_setcsr(csr | 0x8040);
+#endif
     AudioProcessorParameter* mixParam = parameterState->getParameter("Mix");
     const NormalisableRange<float> mixRange(parameterState->getParameterRange("Mix"));
 
@@ -162,7 +165,9 @@ void SuperSpreadAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
     buffer.applyGain(totalGain);
 
+#if !(ARCH == arm64)
     _mm_setcsr(csr);
+#endif
 }
 
 void SuperSpreadAudioProcessor::processBlockBypassed (AudioBuffer<float>& buffer, MidiBuffer& /*midiMessages*/)

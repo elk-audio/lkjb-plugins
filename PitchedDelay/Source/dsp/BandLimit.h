@@ -1,7 +1,12 @@
 #include "JuceHeader.h"
-#include "xmmintrin.h"
 
+#if (ARCH == arm64)
+	#include "sse2neon.h"
+#else
+	#include "xmmintrin.h"
+#endif
 
+#if !(ARCH == arm64)
 class ScopedSSECSR
 {
 public:
@@ -20,7 +25,7 @@ private:
 	const int csr;
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ScopedSSECSR);
 };
-
+#endif
 
 class CAllPassFilterPair
 {
@@ -114,7 +119,9 @@ public:
 
 	CAllPassFilterPair(double coeff_A, double coeff_B);
 
+#if !(ARCH == arm64)
 	void processBlock(double* data, int numSamples);
+#endif
 	void processBlock(float* data, int numSamples);
 
 	void clear();
@@ -150,7 +157,9 @@ public:
 	CHalfBandFilter(const int order, const bool steep);
 
 	void setBlockSize(int newBlockSize);
+#if !(ARCH == arm64)
 	void processBlock(float* data, int numSamples);
+#endif
 	void processBlock(float* dataL, float* dataR, int numSamples);
 
 	void clear();
@@ -175,8 +184,9 @@ class UpSampler2x
 {
 public:
 	UpSampler2x(int order, bool steep);
-
+#if !(ARCH == arm64)
 	void processBlock(const float* in, float* out, int numInSamples);
+#endif
 	void processBlock(const float* inL, const float* inR, float* outL, float* outR, int numInSamples);
 
 	void clear();
@@ -192,8 +202,9 @@ class DownSampler2x
 {
 public:
 	DownSampler2x(int order, bool steep);
-
+#if !(ARCH == arm64)
 	void processBlock(float* in, float* out, int numOutSamples);
+#endif
 	void processBlock(float* inL, float* inR, float* outL, float* outR, int numOutSamples);
 
 	void clear();
@@ -213,10 +224,14 @@ public:
 
 	void setBlockSize(int newBlockSize);
 
+#if !(ARCH == arm64)
 	float* processUp(float* in, int numSamples);
+#endif
 	float** processUp(float* inL, float* inR, int numSamples);
 
+#if !(ARCH == arm64)
 	void processDown(float* in, float* out, int numSamples);
+#endif
 	void processDown(float* inL, float* inR, float* outL, float* outR, int numSamples);
 
 	void clear();
