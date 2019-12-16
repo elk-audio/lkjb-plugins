@@ -1,7 +1,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "xmmintrin.h"
-
+#if (ARCH == arm64)
+    #include "sse2neon.h"
+#else
+    #include "xmmintrin.h"
+#endif
 
 #if JUCE_WINDOWS
 #pragma warning (push)
@@ -79,8 +82,10 @@ void ReFinedAudioProcessor::releaseResources()
 
 void ReFinedAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& /*midiMessages*/)
 {
+#if !(ARCH == arm64)
     const int csr = _mm_getcsr();
     _mm_setcsr(csr | 0x8040);
+#endif
 
     {
         const float low = parameters->getParameter("red")->getValue();
@@ -101,7 +106,9 @@ void ReFinedAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
     dsp.processBlock(chL, chR, numSamples);
  
+#if !(ARCH == arm64)
     _mm_setcsr(csr);
+#endif
 }
 
 bool ReFinedAudioProcessor::hasEditor() const

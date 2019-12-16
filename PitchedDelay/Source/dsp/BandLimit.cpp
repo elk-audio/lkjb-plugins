@@ -7,6 +7,7 @@ CAllPassFilterPair::CAllPassFilterPair(double coeff_A, double coeff_B)
 };
 
 
+#if !(ARCH == arm64)
 
 void CAllPassFilterPair::processBlock(double* data, int numSamples)
 {
@@ -41,6 +42,8 @@ void CAllPassFilterPair::processBlock(double* data, int numSamples)
 	_mm_store_pd(md.getPtr(4), y2);
 
 };
+
+#endif
 
 void CAllPassFilterPair::processBlock(float* data, int numSamples)
 {
@@ -93,12 +96,16 @@ CAllPassFilterCascadePair::CAllPassFilterCascadePair(const double* coefficients_
 		allpassfilter.add(new CAllPassFilterPair(coefficients_A[i], coefficients_B[i]));
 
 };
+ 
+#if !(ARCH == arm64)
 
 void CAllPassFilterCascadePair::processBlock(double* data, int numSamples)
 {
 	for (int i=0; i<numfilters; ++i)
 		allpassfilter.getUnchecked(i)->processBlock(data, numSamples);
 }
+
+#endif
 
 void CAllPassFilterCascadePair::processBlock(float* data, int numSamples)
 {
@@ -375,6 +382,8 @@ void CHalfBandFilter::setBlockSize(int newBlockSize)
 	}
 }
 
+#if !(ARCH == arm64)
+
 void CHalfBandFilter::processBlock(float* data, int numSamples)
 {
 	setBlockSize(numSamples);
@@ -404,6 +413,8 @@ void CHalfBandFilter::processBlock(float* data, int numSamples)
 		}
 	}
 }
+
+#endif
 
 void CHalfBandFilter::processBlock(float* dataL, float* dataR, int numSamples)
 {
@@ -449,6 +460,8 @@ UpSampler2x::UpSampler2x(int order, bool steep)
 {
 }
 
+#if !(ARCH == arm64)
+
 void UpSampler2x::processBlock(const float* in, float* out, int numInSamples)
 {
 	int n=0;
@@ -461,6 +474,8 @@ void UpSampler2x::processBlock(const float* in, float* out, int numInSamples)
 
 	filter.processBlock(out, 2*numInSamples);
 }
+
+#endif
 
 void UpSampler2x::processBlock(const float* inL, const float* inR, float* outL, float* outR, int numInSamples)
 {
@@ -490,6 +505,7 @@ DownSampler2x::DownSampler2x(int order, bool steep)
 }
 
 // ================================================================================================
+#if !(ARCH == arm64)
 void DownSampler2x::processBlock(float* in, float* out, int numOutSamples)
 {
 	filter.processBlock(in, 2*numOutSamples);
@@ -502,6 +518,8 @@ void DownSampler2x::processBlock(float* in, float* out, int numOutSamples)
 		n += 2;
 	}
 }
+#endif
+
 void DownSampler2x::processBlock(float* inL, float* inR, float* outL, float* outR, int numOutSamples)
 {
 	filter.processBlock(inL, inR, 2*numOutSamples);
@@ -540,6 +558,7 @@ void OverSampler2x::setBlockSize(int newBlockSize)
 	}
 }
 
+#if !(ARCH == arm64)
 float* OverSampler2x::processUp(float* in, int numSamples)
 {
 	setBlockSize(2*numSamples);
@@ -548,6 +567,7 @@ float* OverSampler2x::processUp(float* in, int numSamples)
 
 	return data;
 }
+#endif
 
 float** OverSampler2x::processUp(float* inL, float* inR, int numSamples)
 {
@@ -560,12 +580,14 @@ float** OverSampler2x::processUp(float* inL, float* inR, int numSamples)
 	return stereoData;
 }
 
+#if !(ARCH == arm64)
 void OverSampler2x::processDown(float* in, float* out, int numSamples)
 {
 	setBlockSize(2*numSamples);
 
 	downSampler.processBlock(in, out, numSamples);
 }
+#endif
 
 
 void OverSampler2x::processDown(float* inL, float* inR, float* outL, float* outR, int numSamples)

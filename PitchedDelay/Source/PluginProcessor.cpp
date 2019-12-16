@@ -335,7 +335,9 @@ void PitchedDelayAudioProcessor::releaseResources()
 
 void PitchedDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& /*midiMessages*/)
 {
+#if !(ARCH == arm64)
 	ScopedSSECSR csr;
+#endif
 
 	const int numSamples = buffer.getNumSamples();
 	float* chL = buffer.getWritePointer(0);
